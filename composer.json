@@ -19,10 +19,10 @@
     },
     "autoload": {
         "psr-0": {
-            "Lants\\WorkflowBundle": ""
+            "Lazyants\\WorkflowBundle": ""
         }
     },
-    "target-dir": "Lants/WorkflowBundle",
+    "target-dir": "Lazyants/WorkflowBundle",
     "extra": {
         "branch-alias": {
             "dev-master": "0.2-dev"
