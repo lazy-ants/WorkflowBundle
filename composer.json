@@ -1,5 +1,5 @@
 {
-    "name": "lants/workflow-bundle",
+    "name": "lazyants/workflow-bundle",
     "type": "symfony-bundle",
     "description": "Workflow Bundle provides basic usefully functional for workflows",
     "keywords": ["workflow", "bundle"],
