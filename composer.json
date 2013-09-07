@@ -1,0 +1,31 @@
+{
+    "name": "lants/workflow-bundle",
+    "type": "symfony-bundle",
+    "description": "Workflow Bundle provides basic usefully functional for workflows",
+    "keywords": ["workflow", "bundle"],
+    "homepage": "https://github.com/lazyants/WorkflowBundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Maxim Spivakovsky",
+            "email": "maxim@lazy-ants.de"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.3.3",
+        "symfony/framework-bundle": ">=2.3,<2.4-dev",
+        "doctrine/orm": ">=2.2.3,<2.4-dev"
+    },
+    "autoload": {
+        "psr-0": {
+            "Lants\\WorkflowBundle": ""
+        }
+    },
+    "target-dir": "Lants/WorkflowBundle",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.2-dev"
+        }
+    }
+}
