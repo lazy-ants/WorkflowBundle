@@ -1,7 +1,8 @@
 <?php
 
-namespace Lazyants\ToolkitBundle\DependencyInjection;
+namespace Lazyants\WorkflowBundle\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -30,8 +31,68 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('lazyants_toolkit');
+        $rootNode = $treeBuilder->root('lazyants_workflow');
+
+        $this->addTaskSection($rootNode);
+        $this->addWorkflowsSection($rootNode);
 
         return $treeBuilder;
     }
+
+    /**
+     * @param ArrayNodeDefinition $rootNode
+     */
+    private function addTaskSection(ArrayNodeDefinition $rootNode)
+    {
+        $rootNode
+            ->children()
+                ->arrayNode('tasks')
+                    ->prototype('scalar')->end()
+                ->end()
+            ->end();
+    }
+
+    /**
+     * @param ArrayNodeDefinition $rootNode
+     */
+    private function addWorkflowsSection(ArrayNodeDefinition $rootNode)
+    {
+        $rootNode
+            ->children()
+                ->arrayNode('workflows')
+                    ->prototype('array')
+                        ->prototype('array')
+                            ->children()
+                                ->scalarNode('task')->isRequired()->cannotBeEmpty()->end()
+
+                                ->booleanNode('auto')
+                                    ->defaultFalse()
+                                ->end()
+
+                                ->arrayNode('next')
+                                    ->performNoDeepMerging()
+                                    ->beforeNormalization()->ifString()->then(function($v) { return array('value' => $v); })->end()
+                                    ->beforeNormalization()
+                                        ->ifTrue(function($v) { return is_array($v) && isset($v['value']); })
+                                        ->then(function($v) { return preg_split('/\s*,\s*/', $v['value']); })
+                                    ->end()
+                                    ->prototype('scalar')->end()
+                                ->end()
+
+                                ->arrayNode('role')
+                                    ->performNoDeepMerging()
+                                    ->beforeNormalization()->ifString()->then(function($v) { return array('value' => $v); })->end()
+                                    ->beforeNormalization()
+                                        ->ifTrue(function($v) { return is_array($v) && isset($v['value']); })
+                                        ->then(function($v) { return preg_split('/\s*,\s*/', $v['value']); })
+                                    ->end()
+                                    ->prototype('scalar')->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
+    }
+
 }
