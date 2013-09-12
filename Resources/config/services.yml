@@ -1,0 +1,4 @@
+services:
+  lazyants_workflow:
+      class: Lazyants\WorkflowBundle\Service\WorkflowManager
+      arguments: ["%lazyants.tasks%", "%lazyants.workflows%"]

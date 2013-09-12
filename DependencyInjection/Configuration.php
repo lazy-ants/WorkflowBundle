@@ -47,6 +47,7 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->children()
                 ->arrayNode('tasks')
+                    ->defaultValue(array())
                     ->prototype('scalar')->end()
                 ->end()
             ->end();
@@ -60,12 +61,21 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->children()
                 ->arrayNode('workflows')
+                    ->defaultValue(array())
                     ->prototype('array')
                         ->prototype('array')
                             ->children()
                                 ->scalarNode('task')->isRequired()->cannotBeEmpty()->end()
 
                                 ->booleanNode('auto')
+                                    ->defaultFalse()
+                                ->end()
+
+                                ->booleanNode('start')
+                                    ->defaultFalse()
+                                ->end()
+
+                                ->booleanNode('finish')
                                     ->defaultFalse()
                                 ->end()
 
