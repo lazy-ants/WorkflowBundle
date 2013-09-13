@@ -16,11 +16,6 @@ class WorkflowStep extends AbstractModel
     /**
      * @var boolean
      */
-    protected $start = false;
-
-    /**
-     * @var boolean
-     */
     protected $auto = false;
 
     /**
@@ -34,14 +29,8 @@ class WorkflowStep extends AbstractModel
     protected $role;
 
     /**
-     * @var boolean
-     */
-    protected $finish = false;
-
-    /**
-     * @param $name
+     * @param string $name
      * @param Task $task
-     * @param Workflow $workflow
      */
     public function __construct($name, Task $task)
     {
@@ -125,62 +114,5 @@ class WorkflowStep extends AbstractModel
     public function getRole()
     {
         return $this->role;
-    }
-
-    /**
-     * @param boolean $start
-     * @return WorkflowStep
-     */
-    public function setStart($start)
-    {
-        $this->start = $start;
-
-        return $this;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isStart()
-    {
-        return $this->start;
-    }
-
-    /**
-     * @param boolean $finish
-     * @return WorkflowStep
-     */
-    public function setFinish($finish)
-    {
-        $this->finish = $finish;
-
-        return $this;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isFinish()
-    {
-        return $this->finish;
-    }
-
-    /**
-     * @param \Lazyants\WorkflowBundle\Model\Workflow $workflow
-     * @return WorkflowStep
-     */
-    public function setWorkflow($workflow)
-    {
-        $this->workflow = $workflow;
-
-        return $this;
-    }
-
-    /**
-     * @return \Lazyants\WorkflowBundle\Model\Workflow
-     */
-    public function getWorkflow()
-    {
-        return $this->workflow;
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Lazyants\WorkflowBundle\Service;
 
-use Lazyants\WorkflowBundle\Model\Task;
 use Lazyants\WorkflowBundle\Model\TaskCollection;
 use Lazyants\WorkflowBundle\Model\Workflow;
 use Lazyants\WorkflowBundle\Model\WorkflowCollection;
@@ -10,6 +9,10 @@ use Lazyants\WorkflowBundle\Model\WorkflowStep;
 
 class WorkflowManager
 {
+    const TASK = 'Task';
+    const WORKFLOW = 'Workflow';
+    const WORKFLOW_STEP = 'Workflow step';
+
     /**
      * @var \LazyAnts\WorkflowBundle\Model\TaskCollection
      */
@@ -32,28 +35,28 @@ class WorkflowManager
 
         $this->workflowCollection = new WorkflowCollection();
 
-        foreach ($workflows as $workflowName => $workflowSteps) {
+        foreach ($workflows as $workflowName => $workflowData) {
             $workflow = new Workflow($workflowName);
+            $workflow->setDescription($workflowData['description']);
 
             $steps = $workflow->getSteps();
 
-            foreach ($workflowSteps as $workflowStepName => $workflowStepData) {
+            foreach ($workflowData['steps'] as $workflowStepName => $workflowStepData) {
                 $task = $this->taskCollection->get($workflowStepData['task']);
                 if ($task === null) {
-                    throw new \Exception('"' . $workflowStepData['task'] . '" not found');
+                    $this->exceptionNotFound($workflowStepData['task'], WorkflowManager::TASK);
                 }
 
                 $workflowStep = new WorkflowStep($workflowStepName, $task);
 
                 $workflowStep
                     ->setAuto((bool)$workflowStepData['auto'])
-                    ->setStart((bool)$workflowStepData['start'])
-                    ->setFinish((bool)$workflowStepData['finish']);
+                    ->setDescription($workflowStepData['description']);
 
                 $steps->add($workflowStep);
             }
 
-            foreach ($workflowSteps as $workflowStepName => $workflowStepData) {
+            foreach ($workflowData['steps'] as $workflowStepName => $workflowStepData) {
                 foreach ($workflowStepData['next'] as $nextStepName) {
                     if ($steps->get($nextStepName) !== null) {
                         $steps
@@ -61,66 +64,29 @@ class WorkflowManager
                             ->getNext()
                             ->add($steps->get($nextStepName));
                     } else {
-                        throw new \Exception('Workflow step "' . $nextStepName . '" not found');
+                        $this->exceptionNotFound($nextStepName, WorkflowManager::WORKFLOW_STEP);
                     }
                 }
+            }
+
+            $firstStep = $steps->get($workflowData['first_step']);
+            if ($firstStep === null) {
+                $this->exceptionNotFound($workflowData['first_step'], WorkflowManager::WORKFLOW_STEP);
+            } else {
+                $workflow->setFirstStep($firstStep);
+            }
+
+            $lastStep = $steps->get($workflowData['last_step']);
+            if ($lastStep === null) {
+                $this->exceptionNotFound($workflowData['last_step'], WorkflowManager::WORKFLOW_STEP);
+            } else {
+                $workflow->setLastStep($lastStep);
             }
 
             $workflow->setSteps($steps);
 
             $this->workflowCollection->add($workflow);
         }
-    }
-
-    /**
-     * @param string $workflow
-     * @param string $step
-     * @return \Lazyants\WorkflowBundle\Model\WorkflowStepCollection
-     * @throws \Exception
-     */
-    public function next($workflow, $step)
-    {
-        $workflow = $this->getWorkflows()->get($workflow);
-        if ($workflow === null) {
-            throw new \Exception($workflow . " doesn't exists");
-        }
-
-        $workflowStep = $workflow->getStep($step);
-        if ($workflowStep === null) {
-            throw new \Exception($step . " doesn't exists");
-        }
-
-        return $workflowStep->getNext();
-    }
-
-    /**
-     * @param string $workflowName
-     * @return WorkflowStep
-     * @throws \Exception
-     */
-    public function getFirstStep($workflowName)
-    {
-        $workflow = $this->getWorkflows()->get($workflowName);
-        if ($workflow === null) {
-            throw new \Exception('"' . $workflowName . '" not found');
-        }
-
-        return $workflow->getFirstStep();
-    }
-
-    /**
-     * @param string $workflowName
-     * @return WorkflowStep
-     * @throws \Exception
-     */
-    public function getLastStep($workflowName)
-    {
-        $workflow = $this->getWorkflows()->get($workflowName);
-        if ($workflow === null) {
-            throw new \Exception('"' . $workflowName . '" not found');
-        }
-
-        return $workflow->getLastStep();
     }
 
     /**
@@ -148,9 +114,19 @@ class WorkflowManager
     {
         $workflow = $this->getWorkflows()->get($workflowName);
         if ($workflow === null) {
-            throw new \Exception('"' . $workflowName . '" not found');
-        } else {
-            return $workflow;
+            $this->exceptionNotFound($workflowName, WorkflowManager::WORKFLOW);
         }
+
+        return $workflow;
+    }
+
+    /**
+     * @param string $itemName
+     * @param string $type
+     * @throws \Exception
+     */
+    protected function exceptionNotFound($itemName, $type = null)
+    {
+        throw new \Exception(trim(sprintf('%s" %s" not found', $type, $itemName)));
     }
 }

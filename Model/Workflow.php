@@ -9,9 +9,19 @@ namespace Lazyants\WorkflowBundle\Model;
 class Workflow extends AbstractModel
 {
     /**
-     * @var WorkflowStep[]
+     * @var WorkflowStepCollection
      */
     protected $steps;
+
+    /**
+     * @var WorkflowStep
+     */
+    protected $firstStep;
+
+    /**
+     * @var WorkflowStep
+     */
+    protected $lastStep;
 
     public function __construct($name)
     {
@@ -68,32 +78,40 @@ class Workflow extends AbstractModel
     }
 
     /**
-     * @return WorkflowStep
+     * @param \Lazyants\WorkflowBundle\Model\WorkflowStep $firstStep
+     * @return $this
      */
-    public function getFirstStep()
+    public function setFirstStep(WorkflowStep $firstStep)
     {
-        /** @var $step \Lazyants\WorkflowBundle\Model\WorkflowStep */
-        foreach ($this->getSteps() as $step) {
-            if ($step->isStart()) {
-                return $step;
-            }
-        }
+        $this->firstStep = $firstStep;
 
-        return null;
+        return $this;
     }
 
     /**
-     * @return WorkflowStep
+     * @return \Lazyants\WorkflowBundle\Model\WorkflowStep
+     */
+    public function getFirstStep()
+    {
+        return $this->firstStep;
+    }
+
+    /**
+     * @param \Lazyants\WorkflowBundle\Model\WorkflowStep $lastStep
+     * @return $this
+     */
+    public function setLastStep(WorkflowStep $lastStep)
+    {
+        $this->lastStep = $lastStep;
+
+        return $this;
+    }
+
+    /**
+     * @return \Lazyants\WorkflowBundle\Model\WorkflowStep
      */
     public function getLastStep()
     {
-        /** @var $step \Lazyants\WorkflowBundle\Model\WorkflowStep */
-        foreach ($this->getSteps() as $step) {
-            if ($step->isFinish()) {
-                return $step;
-            }
-        }
-
-        return null;
+        return $this->lastStep;
     }
 }
