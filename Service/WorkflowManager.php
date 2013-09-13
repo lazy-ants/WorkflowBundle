@@ -127,6 +127,6 @@ class WorkflowManager
      */
     protected function exceptionNotFound($itemName, $type = null)
     {
-        throw new \Exception(trim(sprintf('%s" %s" not found', $type, $itemName)));
+        throw new \Exception(trim(sprintf('%s "%s" not found', $type, $itemName)));
     }
 }
