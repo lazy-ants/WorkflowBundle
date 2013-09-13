@@ -6,13 +6,8 @@ namespace Lazyants\WorkflowBundle\Model;
  * Class Workflow
  * @package LazyantsWorkflowBundle
  */
-class Workflow
+class Workflow extends AbstractModel
 {
-    /**
-     * @var string
-     */
-    protected $name;
-
     /**
      * @var WorkflowStep[]
      */
@@ -20,27 +15,9 @@ class Workflow
 
     public function __construct($name)
     {
-        $this->name = $name;
-        $this->steps = new WorkflowStepCollection();
-    }
-
-    /**
-     * @param string $name
-     * @return Workflow
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
+        $this
+            ->setName($name)
+            ->setSteps(new WorkflowStepCollection());
     }
 
     /**
@@ -55,6 +32,17 @@ class Workflow
         } else {
             throw new \Exception($step->getName() . ' already present in collection of ' . $this->getName());
         }
+
+        return $this;
+    }
+
+    /**
+     * @param WorkflowStepCollection $steps
+     * @return $this
+     */
+    public function setSteps(WorkflowStepCollection $steps)
+    {
+        $this->steps = $steps;
 
         return $this;
     }

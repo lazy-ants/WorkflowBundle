@@ -6,13 +6,8 @@ namespace Lazyants\WorkflowBundle\Model;
  * Class WorkflowStep
  * @package LazyantsWorkflowBundle
  */
-class WorkflowStep
+class WorkflowStep extends AbstractModel
 {
-    /**
-     * @var string
-     */
-    protected $name;
-
     /**
      * @var Task
      */
@@ -59,25 +54,6 @@ class WorkflowStep
             ->setName($name)
             ->setTask($task)
             ->setWorkflow($workflow);
-    }
-
-    /**
-     * @param string $name
-     * @return WorkflowStep
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
     }
 
     /**
