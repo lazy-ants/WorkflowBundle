@@ -22,6 +22,7 @@ class WorkflowManager
 
     /**
      * @param array $tasks
+     * @param array $workflows
      */
     public function __construct(array $tasks, array $workflows)
     {
@@ -67,12 +68,12 @@ class WorkflowManager
     {
         $workflow = $this->getWorkflows()->get($workflow);
         if ($workflow === null) {
-            throw new \Exception($workflow . ' doesn\'t exists');
+            throw new \Exception($workflow . " doesn't exists");
         }
 
         $workflowStep = $workflow->getStep($step);
         if ($workflowStep === null) {
-            throw new \Exception($step . ' doesn\'t exists');
+            throw new \Exception($step . " doesn't exists");
         }
 
         $nextSteps = $workflowStep->getNext();

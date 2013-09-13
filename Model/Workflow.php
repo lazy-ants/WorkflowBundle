@@ -46,6 +46,7 @@ class Workflow
     /**
      * @param WorkflowStep $step
      * @return Workflow
+     * @throws \Exception
      */
     public function addStep(WorkflowStep $step)
     {

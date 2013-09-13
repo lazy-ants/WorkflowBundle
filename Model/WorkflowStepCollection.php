@@ -47,7 +47,7 @@ class WorkflowStepCollection extends AbstractCollection
     }
 
     /**
-     * @param WorkflowStep $workflow
+     * @param WorkflowStep $workflowStep
      * @return bool
      */
     public function exists(WorkflowStep $workflowStep)
