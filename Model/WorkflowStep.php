@@ -24,7 +24,7 @@ class WorkflowStep extends AbstractModel
     protected $auto = false;
 
     /**
-     * @var array
+     * @var WorkflowStepCollection
      */
     protected $next;
 
@@ -32,11 +32,6 @@ class WorkflowStep extends AbstractModel
      * @var string
      */
     protected $role;
-
-    /**
-     * @var Workflow
-     */
-    protected $workflow;
 
     /**
      * @var boolean
@@ -48,12 +43,12 @@ class WorkflowStep extends AbstractModel
      * @param Task $task
      * @param Workflow $workflow
      */
-    public function __construct($name, Task $task, Workflow $workflow)
+    public function __construct($name, Task $task)
     {
         $this
             ->setName($name)
             ->setTask($task)
-            ->setWorkflow($workflow);
+            ->setNext(new WorkflowStepCollection());
     }
 
     /**
@@ -95,10 +90,10 @@ class WorkflowStep extends AbstractModel
     }
 
     /**
-     * @param array $next
-     * @return WorkflowStep
+     * @param WorkflowStepCollection $next
+     * @return $this
      */
-    public function setNext(array $next)
+    public function setNext(WorkflowStepCollection $next)
     {
         $this->next = $next;
 
@@ -106,7 +101,7 @@ class WorkflowStep extends AbstractModel
     }
 
     /**
-     * @return array
+     * @return WorkflowStepCollection
      */
     public function getNext()
     {
@@ -165,7 +160,7 @@ class WorkflowStep extends AbstractModel
     /**
      * @return boolean
      */
-    public function getFinish()
+    public function isFinish()
     {
         return $this->finish;
     }

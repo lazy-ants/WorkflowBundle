@@ -27,11 +27,9 @@ class Workflow extends AbstractModel
      */
     public function addStep(WorkflowStep $step)
     {
-        if (!$this->steps->exists($step)) {
-            $this->steps->add($step);
-        } else {
-            throw new \Exception($step->getName() . ' already present in collection of ' . $this->getName());
-        }
+        $this
+            ->getSteps()
+            ->add($step);
 
         return $this;
     }
@@ -48,7 +46,7 @@ class Workflow extends AbstractModel
     }
 
     /**
-     * @return WorkflowStep[]
+     * @return WorkflowStepCollection
      */
     public function getSteps()
     {
@@ -69,4 +67,33 @@ class Workflow extends AbstractModel
         }
     }
 
+    /**
+     * @return WorkflowStep
+     */
+    public function getFirstStep()
+    {
+        /** @var $step \Lazyants\WorkflowBundle\Model\WorkflowStep */
+        foreach ($this->getSteps() as $step) {
+            if ($step->isStart()) {
+                return $step;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return WorkflowStep
+     */
+    public function getLastStep()
+    {
+        /** @var $step \Lazyants\WorkflowBundle\Model\WorkflowStep */
+        foreach ($this->getSteps() as $step) {
+            if ($step->isFinish()) {
+                return $step;
+            }
+        }
+
+        return null;
+    }
 }

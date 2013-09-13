@@ -12,4 +12,15 @@ class TaskCollection extends AbstractCollection
     {
         return parent::get($key);
     }
+
+    /**
+     * @param array $tasks
+     */
+    public function fromArray(array $tasks)
+    {
+        foreach ($tasks as $name => $description) {
+            $task = new Task($name, $description);
+            $this->add($task);
+        }
+    }
 }
