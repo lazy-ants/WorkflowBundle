@@ -67,6 +67,16 @@ class WorkflowManager
                         $this->exceptionNotFound($nextStepName, WorkflowManager::WORKFLOW_STEP);
                     }
                 }
+
+                if ($steps->get($workflowStepName)->isAuto() &&
+                    $steps->get($workflowStepName)->getNext()->count() > 1
+                ) {
+                    throw new \Exception(
+                        'Workflow step "' .
+                        $workflowStepName .
+                        '" is configured as auto and so cannot have more then one next step'
+                    );
+                }
             }
 
             $firstStep = $steps->get($workflowData['first_step']);

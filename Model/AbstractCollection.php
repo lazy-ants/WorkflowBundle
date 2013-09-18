@@ -66,6 +66,14 @@ abstract class AbstractCollection implements \Iterator
     }
 
     /**
+     * @return int
+     */
+    public function count()
+    {
+        return count($this->collection);
+    }
+
+    /**
      * @return mixed
      */
     public function current()
