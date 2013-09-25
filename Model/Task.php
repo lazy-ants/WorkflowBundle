@@ -14,4 +14,12 @@ class Task extends AbstractModel
             ->setName($name)
             ->setDescription($description);
     }
+
+    /**
+     * @return string
+     */
+    function __toString()
+    {
+        return $this->getName();
+    }
 }

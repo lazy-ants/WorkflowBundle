@@ -115,4 +115,12 @@ class WorkflowStep extends AbstractModel
     {
         return $this->role;
     }
+
+    /**
+     * @return string
+     */
+    function __toString()
+    {
+        return $this->getName();
+    }
 }

@@ -114,4 +114,12 @@ class Workflow extends AbstractModel
     {
         return $this->lastStep;
     }
+
+    /**
+     * @return string
+     */
+    function __toString()
+    {
+        return $this->getName();
+    }
 }
