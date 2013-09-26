@@ -135,6 +135,40 @@ class WorkflowProcessor implements ContainerAwareInterface
 
     /**
      * @param string $workflowName
+     * @return WorkflowStep[]
+     */
+    public function stepsForCurrentRoles($workflowName)
+    {
+        $result = array();
+
+        foreach ($this->getWorkflow($workflowName)->getSteps() as $step) {
+            foreach ($this->securityContext->getToken()->getRoles() as $role) {
+                if (in_array($role->getRole(), $step->getRoles())) {
+                    $result[] = $step;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $workflowName
+     * @return WorkflowStep[]
+     */
+    public function stepNamesForCurrentRoles($workflowName)
+    {
+        $result = array();
+
+        foreach ($this->stepsForCurrentRoles($workflowName) as $step) {
+            $result[] = $step->getName();
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $workflowName
      * @param WorkflowedObjectInterface $object
      * @param WorkflowStep $step
      */
