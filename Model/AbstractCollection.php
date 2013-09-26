@@ -5,7 +5,7 @@ namespace Lazyants\WorkflowBundle\Model;
 abstract class AbstractCollection implements \Iterator
 {
     /**
-     * @var array
+     * @var AbstractModel[]
      */
     protected $collection;
 
@@ -66,6 +66,16 @@ abstract class AbstractCollection implements \Iterator
     }
 
     /**
+     * @return AbstractModel
+     */
+    public function first()
+    {
+        foreach ($this->collection as $item) {
+            return $item;
+        }
+    }
+
+    /**
      * @return int
      */
     public function count()
@@ -112,5 +122,4 @@ abstract class AbstractCollection implements \Iterator
     {
         reset($this->collection);
     }
-
 }
