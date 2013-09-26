@@ -51,7 +51,8 @@ class WorkflowManager
 
                 $workflowStep
                     ->setAuto((bool)$workflowStepData['auto'])
-                    ->setDescription($workflowStepData['description']);
+                    ->setDescription($workflowStepData['description'])
+                    ->setRoles($workflowStepData['roles']);
 
                 $steps->add($workflowStep);
             }

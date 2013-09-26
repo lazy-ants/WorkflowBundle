@@ -5,6 +5,7 @@ services:
 
   lazyants.workflow_processor:
       class: Lazyants\WorkflowBundle\Service\WorkflowProcessor
-      arguments: [@event_dispatcher]
       calls:
           - [ setContainer, [ @service_container ] ]
+          - [ setDispatcher, [ @event_dispatcher ] ]
+          - [ setSecurityContext, [ @security.context ]]

@@ -83,7 +83,7 @@ class Configuration implements ConfigurationInterface
                                             ->prototype('scalar')->end()
                                         ->end()
 
-                                        ->arrayNode('role')
+                                        ->arrayNode('roles')
                                             ->performNoDeepMerging()
                                             ->beforeNormalization()->ifString()->then(function($v) { return array('value' => $v); })->end()
                                             ->beforeNormalization()

@@ -8,13 +8,14 @@ use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Lazyants\WorkflowBundle\Event\WorkflowStepEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Security\Core\SecurityContext;
 
 class WorkflowProcessor implements ContainerAwareInterface
 {
     /**
      * @var \Symfony\Component\DependencyInjection\ContainerAwareInterface
      */
-    private $container;
+    protected $container;
 
     /**
      * @var EventDispatcherInterface
@@ -22,19 +23,32 @@ class WorkflowProcessor implements ContainerAwareInterface
     protected $dispatcher;
 
     /**
+     * @var SecurityContext
+     */
+    protected $securityContext;
+
+    /**
      * @param EventDispatcherInterface $dispatcher
      */
-    public function __construct(EventDispatcherInterface $dispatcher)
+    public function setDispatcher(EventDispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
     }
 
     /**
-     * {@inheritDoc}
+     * @param ContainerInterface $container
      */
     public function setContainer(ContainerInterface $container = null)
     {
         $this->container = $container;
+    }
+
+    /**
+     * @param SecurityContext $securityContext
+     */
+    public function setSecurityContext(SecurityContext $securityContext)
+    {
+        $this->securityContext = $securityContext;
     }
 
     /**
@@ -45,7 +59,8 @@ class WorkflowProcessor implements ContainerAwareInterface
     public function start($workflowName, WorkflowedObjectInterface $object, $auto = true)
     {
         $step = $this->getWorkflow($workflowName)->getFirstStep();
-        $object->setWorkflowStep($step->getName());
+
+        $this->changeCurrentStep($workflowName, $object, $step);
 
         if ($auto) {
             $this->reachNext($workflowName, $object);
@@ -64,20 +79,43 @@ class WorkflowProcessor implements ContainerAwareInterface
         $currentStep = $workflow->getStep($object->getWorkflowStep());
 
         if ($nextStepName !== '') {
-            $nextStep = $currentStep->getNext()->get($nextStepName);
+            $currentStep = $currentStep->getNext()->get($nextStepName);
 
-            $object->setWorkflowStep($nextStep->getName());
-            $currentStep = $nextStep;
-
-            $this->stepReachedEvent($workflowName, $object, $currentStep);
+            $this->changeCurrentStep($workflowName, $object, $currentStep);
         }
 
         if ($auto && $currentStep->isAuto() && $currentStep->getNext()->count() === 1) {
-            $object->setWorkflowStep($currentStep->getNext()->first()->getName());
+            $this->reachNext($workflowName, $object, $currentStep->getNext()->first()->getName());
+        }
+    }
 
-            $this->stepReachedEvent($workflowName, $object, $currentStep);
+    /**
+     * @param string $workflowName
+     * @param WorkflowedObjectInterface $object
+     * @param WorkflowStep $step
+     * @throws \Exception
+     */
+    protected function changeCurrentStep($workflowName, WorkflowedObjectInterface $object, WorkflowStep $step)
+    {
+        if (!$this->stepReachable($step)) {
+            throw new \Exception('You have no permissions to reach the next step');
+        }
 
-            $this->reachNext($workflowName, $object);
+        $object->setWorkflowStep($step->getName());
+
+        $this->stepReachedEvent($workflowName, $object, $step);
+    }
+
+    /**
+     * @param WorkflowStep $step
+     * @return bool
+     */
+    protected function stepReachable(WorkflowStep $step)
+    {
+        if (count($step->getRoles()) > 0 && !$this->securityContext->isGranted($step->getRoles())) {
+            return false;
+        } else {
+            return true;
         }
     }
 
@@ -90,7 +128,9 @@ class WorkflowProcessor implements ContainerAwareInterface
     {
         $workflow = $this->getWorkflow($workflowName);
 
-        return $workflow->getStep($object->getWorkflowStep())->getNext();
+        $nextSteps = $workflow->getStep($object->getWorkflowStep())->getNext();
+
+        return $nextSteps;
     }
 
     /**

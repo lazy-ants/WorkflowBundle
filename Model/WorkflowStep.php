@@ -24,9 +24,9 @@ class WorkflowStep extends AbstractModel
     protected $next;
 
     /**
-     * @var string
+     * @var array
      */
-    protected $role;
+    protected $roles;
 
     /**
      * @param string $name
@@ -98,22 +98,22 @@ class WorkflowStep extends AbstractModel
     }
 
     /**
-     * @param string $role
-     * @return WorkflowStep
+     * @param $role
+     * @return $this
      */
-    public function setRole($role)
+    public function setRoles(array $roles)
     {
-        $this->role = $role;
+        $this->roles = $roles;
 
         return $this;
     }
 
     /**
-     * @return string
+     * @return array
      */
-    public function getRole()
+    public function getRoles()
     {
-        return $this->role;
+        return $this->roles;
     }
 
     /**
