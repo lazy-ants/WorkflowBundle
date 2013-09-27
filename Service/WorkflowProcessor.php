@@ -112,7 +112,10 @@ class WorkflowProcessor implements ContainerAwareInterface
      */
     protected function stepReachable(WorkflowStep $step)
     {
-        if (count($step->getRoles()) > 0 && !$this->securityContext->isGranted($step->getRoles())) {
+        if (count($step->getRoles()) > 0 &&
+            $this->securityContext->getToken() !== null &&
+            !$this->securityContext->isGranted($step->getRoles())
+        ) {
             return false;
         } else {
             return true;
@@ -142,9 +145,13 @@ class WorkflowProcessor implements ContainerAwareInterface
         $result = array();
 
         foreach ($this->getWorkflow($workflowName)->getSteps() as $step) {
-            foreach ($this->securityContext->getToken()->getRoles() as $role) {
-                if (in_array($role->getRole(), $step->getRoles())) {
-                    $result[] = $step;
+            if ($this->securityContext->getToken() === null) {
+                $result[] = $step;
+            } else {
+                foreach ($this->securityContext->getToken()->getRoles() as $role) {
+                    if (in_array($role->getRole(), $step->getRoles())) {
+                        $result[] = $step;
+                    }
                 }
             }
         }
