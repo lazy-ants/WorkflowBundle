@@ -10,7 +10,7 @@ use Lazyants\WorkflowBundle\Event\WorkflowStepEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Security\Core\SecurityContext;
 
-class WorkflowProcessor implements ContainerAwareInterface
+class WorkflowProcessor
 {
     /**
      * @var \Symfony\Component\DependencyInjection\ContainerAwareInterface
@@ -34,9 +34,11 @@ class WorkflowProcessor implements ContainerAwareInterface
 
     /**
      * @param string $workflowName
+     * @param ContainerInterface $container
      */
-    public function __construct($workflowName)
+    public function __construct(ContainerInterface $container, $workflowName)
     {
+        $this->container = $container;
         $this->workflow = $this->getWorkflow($workflowName);
     }
 
@@ -46,14 +48,6 @@ class WorkflowProcessor implements ContainerAwareInterface
     public function setDispatcher(EventDispatcherInterface $dispatcher)
     {
         $this->dispatcher = $dispatcher;
-    }
-
-    /**
-     * @param ContainerInterface $container
-     */
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
     }
 
     /**
