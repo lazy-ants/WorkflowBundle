@@ -100,7 +100,7 @@ class WorkflowProcessor
      */
     protected function changeCurrentStep(WorkflowedObjectInterface $object, WorkflowStep $step)
     {
-        if (!$this->stepReachable($step)) {
+        if (!$this->stepReachable($this->workflow->getStep($object->getWorkflowStep()))) {
             throw new \Exception('You have no permissions to reach the next step');
         }
 
