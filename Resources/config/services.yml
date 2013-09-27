@@ -2,10 +2,3 @@ services:
   lazyants.workflow_manager:
       class: Lazyants\WorkflowBundle\Service\WorkflowManager
       arguments: ["%lazyants.tasks%", "%lazyants.workflows%"]
-
-  lazyants.workflow_processor:
-      class: Lazyants\WorkflowBundle\Service\WorkflowProcessor
-      calls:
-          - [ setContainer, [ @service_container ] ]
-          - [ setDispatcher, [ @event_dispatcher ] ]
-          - [ setSecurityContext, [ @security.context ]]

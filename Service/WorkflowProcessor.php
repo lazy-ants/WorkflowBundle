@@ -28,6 +28,19 @@ class WorkflowProcessor implements ContainerAwareInterface
     protected $securityContext;
 
     /**
+     * @var \Lazyants\WorkflowBundle\Model\Workflow
+     */
+    protected $workflow;
+
+    /**
+     * @param string $workflowName
+     */
+    public function __construct($workflowName)
+    {
+        $this->workflow = $this->getWorkflow($workflowName);
+    }
+
+    /**
      * @param EventDispatcherInterface $dispatcher
      */
     public function setDispatcher(EventDispatcherInterface $dispatcher)
@@ -52,50 +65,46 @@ class WorkflowProcessor implements ContainerAwareInterface
     }
 
     /**
-     * @param string $workflowName
      * @param WorkflowedObjectInterface $object
      * @param bool $auto If steps with auto=true should be processed
      */
-    public function start($workflowName, WorkflowedObjectInterface $object, $auto = true)
+    public function start(WorkflowedObjectInterface $object, $auto = true)
     {
-        $step = $this->getWorkflow($workflowName)->getFirstStep();
+        $step = $this->workflow->getFirstStep();
 
-        $this->changeCurrentStep($workflowName, $object, $step);
+        $this->changeCurrentStep($object, $step);
 
         if ($auto) {
-            $this->reachNext($workflowName, $object);
+            $this->reachNext($object);
         }
     }
 
     /**
-     * @param string $workflowName
      * @param WorkflowedObjectInterface $object
      * @param string $nextStepName If there is no auto=true or there are many then one next step
      * @param bool $auto If steps with auto=true should be processed
      */
-    public function reachNext($workflowName, WorkflowedObjectInterface $object, $nextStepName = '', $auto = true)
+    public function reachNext(WorkflowedObjectInterface $object, $nextStepName = '', $auto = true)
     {
-        $workflow = $this->getWorkflow($workflowName);
-        $currentStep = $workflow->getStep($object->getWorkflowStep());
+        $currentStep = $this->workflow->getStep($object->getWorkflowStep());
 
         if ($nextStepName !== '') {
             $currentStep = $currentStep->getNext()->get($nextStepName);
 
-            $this->changeCurrentStep($workflowName, $object, $currentStep);
+            $this->changeCurrentStep($object, $currentStep);
         }
 
         if ($auto && $currentStep->isAuto() && $currentStep->getNext()->count() === 1) {
-            $this->reachNext($workflowName, $object, $currentStep->getNext()->first()->getName());
+            $this->reachNext($object, $currentStep->getNext()->first()->getName());
         }
     }
 
     /**
-     * @param string $workflowName
      * @param WorkflowedObjectInterface $object
      * @param WorkflowStep $step
      * @throws \Exception
      */
-    protected function changeCurrentStep($workflowName, WorkflowedObjectInterface $object, WorkflowStep $step)
+    protected function changeCurrentStep(WorkflowedObjectInterface $object, WorkflowStep $step)
     {
         if (!$this->stepReachable($step)) {
             throw new \Exception('You have no permissions to reach the next step');
@@ -103,7 +112,7 @@ class WorkflowProcessor implements ContainerAwareInterface
 
         $object->setWorkflowStep($step->getName());
 
-        $this->stepReachedEvent($workflowName, $object, $step);
+        $this->stepReachedEvent($object, $step);
     }
 
     /**
@@ -123,28 +132,24 @@ class WorkflowProcessor implements ContainerAwareInterface
     }
 
     /**
-     * @param string $workflowName
      * @param WorkflowedObjectInterface $object
      * @return \Lazyants\WorkflowBundle\Model\WorkflowStepCollection
      */
-    public function nextSteps($workflowName, WorkflowedObjectInterface $object)
+    public function nextSteps(WorkflowedObjectInterface $object)
     {
-        $workflow = $this->getWorkflow($workflowName);
-
-        $nextSteps = $workflow->getStep($object->getWorkflowStep())->getNext();
+        $nextSteps = $this->workflow->getStep($object->getWorkflowStep())->getNext();
 
         return $nextSteps;
     }
 
     /**
-     * @param string $workflowName
      * @return WorkflowStep[]
      */
-    public function stepsForCurrentRoles($workflowName)
+    public function stepsForCurrentRoles()
     {
         $result = array();
 
-        foreach ($this->getWorkflow($workflowName)->getSteps() as $step) {
+        foreach ($this->workflow->getSteps() as $step) {
             if ($this->securityContext->getToken() === null) {
                 $result[] = $step;
             } else {
@@ -160,14 +165,13 @@ class WorkflowProcessor implements ContainerAwareInterface
     }
 
     /**
-     * @param string $workflowName
      * @return WorkflowStep[]
      */
-    public function stepNamesForCurrentRoles($workflowName)
+    public function stepNamesForCurrentRoles()
     {
         $result = array();
 
-        foreach ($this->stepsForCurrentRoles($workflowName) as $step) {
+        foreach ($this->stepsForCurrentRoles() as $step) {
             $result[] = $step->getName();
         }
 
@@ -175,14 +179,13 @@ class WorkflowProcessor implements ContainerAwareInterface
     }
 
     /**
-     * @param string $workflowName
      * @param WorkflowedObjectInterface $object
      * @param WorkflowStep $step
      */
-    protected function stepReachedEvent($workflowName, WorkflowedObjectInterface $object, WorkflowStep $step)
+    protected function stepReachedEvent(WorkflowedObjectInterface $object, WorkflowStep $step)
     {
-        $eventName = sprintf('%s.%s.reached', $workflowName, $step->getName());
-        $this->dispatcher->dispatch($eventName, new WorkflowStepEvent($workflowName, $object, $step));
+        $eventName = sprintf('%s.%s.reached', $this->workflow->getName(), $step->getName());
+        $this->dispatcher->dispatch($eventName, new WorkflowStepEvent($this->workflow->getName(), $object, $step));
     }
 
     /**
