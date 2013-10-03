@@ -49,6 +49,15 @@ class WorkflowManager
 
                 $workflowStep = new WorkflowStep($workflowStepName, $task);
 
+                if ($workflowStepData['auto'] && count($workflowStepData['roles']) > 0) {
+                    throw new \Exception(
+                        sprintf(
+                            'Workflow step "%s" is configured as auto and so cannot have any roles',
+                            $workflowStepName
+                        )
+                    );
+                }
+
                 $workflowStep
                     ->setAuto((bool)$workflowStepData['auto'])
                     ->setDescription($workflowStepData['description'])
@@ -73,9 +82,10 @@ class WorkflowManager
                     $steps->get($workflowStepName)->getNext()->count() > 1
                 ) {
                     throw new \Exception(
-                        'Workflow step "' .
-                        $workflowStepName .
-                        '" is configured as auto and so cannot have more then one next step'
+                        sprintf(
+                            'Workflow step "%s" is configured as auto and so cannot have more then one next step',
+                            $workflowStepName
+                        )
                     );
                 }
             }
