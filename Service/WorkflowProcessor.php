@@ -3,10 +3,11 @@
 namespace Lazyants\WorkflowBundle\Service;
 
 use Lazyants\WorkflowBundle\Definition\WorkflowedObjectInterface;
+use Lazyants\WorkflowBundle\Event\StepValidationEvent;
 use Lazyants\WorkflowBundle\Model\WorkflowStep;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Lazyants\WorkflowBundle\Event\WorkflowStepEvent;
+use Lazyants\WorkflowBundle\Event\StepReachedEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Security\Core\SecurityContext;
 
@@ -100,31 +101,39 @@ class WorkflowProcessor
      */
     protected function changeCurrentStep(WorkflowedObjectInterface $object, WorkflowStep $step)
     {
-        if ($object->getWorkflowStep() != '') {
-            if (!$this->stepReachable($this->workflow->getStep($object->getWorkflowStep()))) {
-                throw new \Exception('You have no permissions to reach the next step');
-            }
+        if (!$this->nextStepReachable($object)) {
+            throw new \Exception('You have no permissions to reach the next step');
         }
 
         $object->setWorkflowStep($step->getName());
 
-        $this->stepReachedEvent($object, $step);
+        $eventName = sprintf('%s.%s.reached', $this->workflow->getName(), $step->getName());
+        $this->dispatcher->dispatch($eventName, new StepReachedEvent($step, $object));
     }
 
     /**
-     * @param WorkflowStep $step
+     * @param \Lazyants\WorkflowBundle\Definition\WorkflowedObjectInterface $object
      * @return bool
      */
-    protected function stepReachable(WorkflowStep $step)
+    public function nextStepReachable(WorkflowedObjectInterface $object)
     {
-        if (count($step->getRoles()) > 0 &&
-            $this->securityContext->getToken() !== null &&
-            !$this->securityContext->isGranted($step->getRoles())
-        ) {
-            return false;
-        } else {
-            return true;
+        $violations = array();
+
+        if ($object->getWorkflowStep() != '' && $this->container->isScopeActive('request')) {
+            $step = $this->workflow->getStep($object->getWorkflowStep());
+
+            if (count($step->getRoles()) > 0 && !$this->securityContext->isGranted($step->getRoles())) {
+                $violations[] = 'Current user doesn\'t have permissions to reach next step';
+            } else {
+                $event = new StepValidationEvent($step, $object);
+
+                $eventName = sprintf('%s.%s.validation', $this->workflow->getName(), $step->getName());
+                $this->dispatcher->dispatch($eventName, $event);
+                $violations = $event->getViolations();
+            }
         }
+
+        return count($violations) > 0 ? false : true;
     }
 
     /**
@@ -172,16 +181,6 @@ class WorkflowProcessor
         }
 
         return $result;
-    }
-
-    /**
-     * @param WorkflowedObjectInterface $object
-     * @param WorkflowStep $step
-     */
-    protected function stepReachedEvent(WorkflowedObjectInterface $object, WorkflowStep $step)
-    {
-        $eventName = sprintf('%s.%s.reached', $this->workflow->getName(), $step->getName());
-        $this->dispatcher->dispatch($eventName, new WorkflowStepEvent($this->workflow->getName(), $object, $step));
     }
 
     /**

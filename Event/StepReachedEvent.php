@@ -6,13 +6,8 @@ use Lazyants\WorkflowBundle\Definition\WorkflowedObjectInterface;
 use Lazyants\WorkflowBundle\Model\WorkflowStep;
 use Symfony\Component\EventDispatcher\Event;
 
-class WorkflowStepEvent extends Event
+class StepReachedEvent extends Event
 {
-    /**
-     * @var string
-     */
-    protected $workflow;
-
     /**
      * @var \Lazyants\WorkflowBundle\Definition\WorkflowedObjectInterface
      */
@@ -24,23 +19,13 @@ class WorkflowStepEvent extends Event
     protected $workflowStep;
 
     /**
-     * @param string $workflow
-     * @param WorkflowedObjectInterface $object
      * @param WorkflowStep $workflowStep
+     * @param WorkflowedObjectInterface $object
      */
-    public function __construct($workflow, WorkflowedObjectInterface $object, WorkflowStep $workflowStep)
+    public function __construct(WorkflowStep $workflowStep, WorkflowedObjectInterface $object)
     {
-        $this->workflow = $workflow;
         $this->object = $object;
         $this->workflowStep = $workflowStep;
-    }
-
-    /**
-     * @return string
-     */
-    public function getWorkflow()
-    {
-        return $this->workflow;
     }
 
     /**
