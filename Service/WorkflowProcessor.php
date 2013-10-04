@@ -34,20 +34,19 @@ class WorkflowProcessor
     protected $workflow;
 
     /**
+     * @var bool
+     */
+    protected $flush = true;
+
+    /**
      * @param string $workflowName
      * @param ContainerInterface $container
+     * @param EventDispatcherInterface $dispatcher
      */
-    public function __construct(ContainerInterface $container, $workflowName)
+    public function __construct($workflowName, ContainerInterface $container, EventDispatcherInterface $dispatcher)
     {
         $this->container = $container;
         $this->workflow = $this->getWorkflow($workflowName);
-    }
-
-    /**
-     * @param EventDispatcherInterface $dispatcher
-     */
-    public function setDispatcher(EventDispatcherInterface $dispatcher)
-    {
         $this->dispatcher = $dispatcher;
     }
 
@@ -84,9 +83,11 @@ class WorkflowProcessor
         $currentStep = $this->workflow->getStep($object->getWorkflowStep());
 
         if ($nextStepName !== '') {
-            $currentStep = $currentStep->getNext()->get($nextStepName);
+            $nextStep = $currentStep->getNext()->get($nextStepName);
 
-            $this->changeCurrentStep($object, $currentStep);
+            $this->changeCurrentStep($object, $nextStep);
+
+            $currentStep = $nextStep;
         }
 
         if ($auto && $currentStep->isAuto() && $currentStep->getNext()->count() === 1) {
@@ -105,10 +106,24 @@ class WorkflowProcessor
             throw new \Exception('You have no permissions to reach the next step');
         }
 
+        $previousStep = null;
+        if ($object->getWorkflowStep() != '') {
+            $previousStep = $this->workflow->getStep($object->getWorkflowStep());
+        }
+
         $object->setWorkflowStep($step->getName());
 
         $eventName = sprintf('%s.%s.reached', $this->workflow->getName(), $step->getName());
-        $this->dispatcher->dispatch($eventName, new StepReachedEvent($step, $object));
+        $this->dispatcher->dispatch(
+            $eventName,
+            new StepReachedEvent($step, $previousStep, $object, $this->isFlushEnabled())
+        );
+
+        $eventName = sprintf('%s.step.reached', $this->workflow->getName(), $step->getName());
+        $this->dispatcher->dispatch(
+            $eventName,
+            new StepReachedEvent($step, $previousStep, $object, $this->isFlushEnabled())
+        );
     }
 
     /**
@@ -155,14 +170,14 @@ class WorkflowProcessor
         $result = array();
 
         foreach ($this->workflow->getSteps() as $step) {
-            if ($this->securityContext->getToken() === null) {
-                $result[] = $step;
-            } else {
+            if ($this->container->isScopeActive('request')) {
                 foreach ($this->securityContext->getToken()->getRoles() as $role) {
                     if (in_array($role->getRole(), $step->getRoles())) {
                         $result[] = $step;
                     }
                 }
+            } else {
+                $result[] = $step;
             }
         }
 
@@ -190,5 +205,44 @@ class WorkflowProcessor
     protected function getWorkflow($workflowName)
     {
         return $this->container->get('lazyants.workflow_manager')->getWorkflow($workflowName);
+    }
+
+    /**
+     * @return $this
+     */
+    public function enableFlush()
+    {
+        $this->setFlush(true);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function disableFlush()
+    {
+        $this->setFlush(false);
+
+        return $this;
+    }
+
+    /**
+     * @param bool $flush
+     * @return $this
+     */
+    protected function setFlush($flush)
+    {
+        $this->flush = $flush;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFlushEnabled()
+    {
+        return $this->flush;
     }
 }

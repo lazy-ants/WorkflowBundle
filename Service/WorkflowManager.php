@@ -14,6 +14,11 @@ class WorkflowManager
     const WORKFLOW_STEP = 'Workflow step';
 
     /**
+     * @var array
+     */
+    protected $reservedWords = array('step');
+
+    /**
      * @var \LazyAnts\WorkflowBundle\Model\TaskCollection
      */
     protected $taskCollection;
@@ -45,6 +50,16 @@ class WorkflowManager
                 $task = $this->taskCollection->get($workflowStepData['task']);
                 if ($task === null) {
                     $this->exceptionNotFound($workflowStepData['task'], WorkflowManager::TASK);
+                }
+
+                if (in_array($workflowStepName, $this->reservedWords)) {
+                    throw new \Exception(
+                        sprintf(
+                            '"%s" is a reserved word and cannot be used as step name. Reserved words are "%s"',
+                            $workflowStepName,
+                            implode(', ', $this->reservedWords)
+                        )
+                    );
                 }
 
                 $workflowStep = new WorkflowStep($workflowStepName, $task);

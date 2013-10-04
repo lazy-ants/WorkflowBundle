@@ -16,16 +16,50 @@ class StepReachedEvent extends Event
     /**
      * @var \Lazyants\WorkflowBundle\Model\WorkflowStep
      */
-    protected $workflowStep;
+    protected $reachedWorkflowStep;
 
     /**
-     * @param WorkflowStep $workflowStep
-     * @param WorkflowedObjectInterface $object
+     * @var \Lazyants\WorkflowBundle\Model\WorkflowStep
      */
-    public function __construct(WorkflowStep $workflowStep, WorkflowedObjectInterface $object)
-    {
+    protected $leavedWorkflowStep = null;
+
+    /**
+     * @var bool
+     */
+    protected $flush;
+
+    /**
+     * @param WorkflowStep $reachedWorkflowStep
+     * @param WorkflowStep $leavedWorkflowStep
+     * @param WorkflowedObjectInterface $object
+     * @param bool $flush
+     */
+    public function __construct(
+        WorkflowStep $reachedWorkflowStep,
+        WorkflowStep $leavedWorkflowStep = null,
+        WorkflowedObjectInterface $object,
+        $flush
+    ) {
+        $this->reachedWorkflowStep = $reachedWorkflowStep;
+        $this->leavedWorkflowStep = $leavedWorkflowStep;
         $this->object = $object;
-        $this->workflowStep = $workflowStep;
+        $this->flush = (bool)$flush;
+    }
+
+    /**
+     * @return \Lazyants\WorkflowBundle\Model\WorkflowStep
+     */
+    public function getReachedWorkflowStep()
+    {
+        return $this->reachedWorkflowStep;
+    }
+
+    /**
+     * @return \Lazyants\WorkflowBundle\Model\WorkflowStep
+     */
+    public function getLeavedWorkflowStep()
+    {
+        return $this->leavedWorkflowStep;
     }
 
     /**
@@ -37,10 +71,10 @@ class StepReachedEvent extends Event
     }
 
     /**
-     * @return \Lazyants\WorkflowBundle\Model\WorkflowStep
+     * @return bool
      */
-    public function getWorkflowStep()
+    public function isFlushEnabled()
     {
-        return $this->workflowStep;
+        return $this->flush;
     }
 }
