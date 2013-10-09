@@ -98,12 +98,14 @@ class WorkflowProcessor
     /**
      * @param WorkflowedObjectInterface $object
      * @param WorkflowStep $step
-     * @throws \Exception
+     * @return array|null
      */
     protected function changeCurrentStep(WorkflowedObjectInterface $object, WorkflowStep $step)
     {
-        if (!$this->nextStepReachable($object)) {
-            throw new \Exception('You have no permissions to reach the next step');
+        $violations = $this->nextStepReachable($object);
+
+        if ($violations !== null) {
+            return $violations;
         }
 
         $previousStep = null;
@@ -124,11 +126,13 @@ class WorkflowProcessor
             $eventName,
             new StepReachedEvent($step, $previousStep, $object, $this->isFlushEnabled())
         );
+
+        return null;
     }
 
     /**
-     * @param \Lazyants\WorkflowBundle\Definition\WorkflowedObjectInterface $object
-     * @return bool
+     * @param WorkflowedObjectInterface $object
+     * @return array|null
      */
     public function nextStepReachable(WorkflowedObjectInterface $object)
     {
@@ -148,7 +152,7 @@ class WorkflowProcessor
             }
         }
 
-        return count($violations) > 0 ? false : true;
+        return count($violations) > 0 ? $violations : null;
     }
 
     /**
