@@ -77,6 +77,7 @@ class WorkflowProcessor
      * @param WorkflowedObjectInterface $object
      * @param string $nextStepName If there is no auto=true or there are many then one next step
      * @param bool $auto If steps with auto=true should be processed
+     * @return array|null
      */
     public function reachNext(WorkflowedObjectInterface $object, $nextStepName = '', $auto = true)
     {
@@ -96,6 +97,8 @@ class WorkflowProcessor
         if ($auto && $currentStep->isAuto() && $currentStep->getNext()->count() === 1) {
             $this->reachNext($object, $currentStep->getNext()->first()->getName());
         }
+
+        return null;
     }
 
     /**
