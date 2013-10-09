@@ -85,7 +85,10 @@ class WorkflowProcessor
         if ($nextStepName !== '') {
             $nextStep = $currentStep->getNext()->get($nextStepName);
 
-            $this->changeCurrentStep($object, $nextStep);
+            $violations = $this->changeCurrentStep($object, $nextStep);
+            if ($violations !== null) {
+                return $violations;
+            }
 
             $currentStep = $nextStep;
         }
