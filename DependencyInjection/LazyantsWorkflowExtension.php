@@ -19,7 +19,7 @@ class LazyantsWorkflowExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container)
     {
-        $configuration = $this->getConfiguration($configs, $container);
+        $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
         $container->setParameter('lazyants.tasks', $config['tasks']);
@@ -27,12 +27,5 @@ class LazyantsWorkflowExtension extends Extension
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
-    }
-
-    public function getConfiguration(array $config, ContainerBuilder $container)
-    {
-        $bundles = $container->getParameter('kernel.bundles');
-
-        return new Configuration(array_keys($bundles));
     }
 }

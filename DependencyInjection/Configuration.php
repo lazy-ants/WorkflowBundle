@@ -13,18 +13,6 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class Configuration implements ConfigurationInterface
 {
-    private $bundles;
-
-    /**
-     * Constructor
-     *
-     * @param array $bundles An array of bundle names
-     */
-    public function __construct(array $bundles)
-    {
-        $this->bundles = $bundles;
-    }
-
     /**
      * {@inheritDoc}
      */
