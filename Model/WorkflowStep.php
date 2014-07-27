@@ -9,11 +9,6 @@ namespace Lazyants\WorkflowBundle\Model;
 class WorkflowStep extends AbstractModel
 {
     /**
-     * @var Task
-     */
-    protected $task;
-
-    /**
      * @var boolean
      */
     protected $auto = false;
@@ -30,34 +25,14 @@ class WorkflowStep extends AbstractModel
 
     /**
      * @param string $name
-     * @param Task $task
      */
-    public function __construct($name, Task $task)
+    public function __construct($name)
     {
         $this
             ->setName($name)
-            ->setTask($task)
             ->setNext(new WorkflowStepCollection());
     }
 
-    /**
-     * @param \Lazyants\WorkflowBundle\Model\Task $task
-     * @return WorkflowStep
-     */
-    public function setTask($task)
-    {
-        $this->task = $task;
-
-        return $this;
-    }
-
-    /**
-     * @return \Lazyants\WorkflowBundle\Model\Task
-     */
-    public function getTask()
-    {
-        return $this->task;
-    }
 
     /**
      * @param boolean $auto

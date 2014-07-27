@@ -21,24 +21,9 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('lazyants_workflow');
 
-        $this->addTaskSection($rootNode);
         $this->addWorkflowsSection($rootNode);
 
         return $treeBuilder;
-    }
-
-    /**
-     * @param ArrayNodeDefinition $rootNode
-     */
-    private function addTaskSection(ArrayNodeDefinition $rootNode)
-    {
-        $rootNode
-            ->children()
-                ->arrayNode('tasks')
-                    ->defaultValue(array())
-                    ->prototype('scalar')->end()
-                ->end()
-            ->end();
     }
 
     /**
@@ -57,7 +42,6 @@ class Configuration implements ConfigurationInterface
                             ->arrayNode('steps')
                                 ->prototype('array')
                                     ->children()
-                                        ->scalarNode('task')->isRequired()->cannotBeEmpty()->end()
                                         ->scalarNode('description')->defaultValue('')->end()
                                         ->booleanNode('auto')->defaultFalse()->end()
 
