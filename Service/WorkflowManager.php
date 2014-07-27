@@ -2,14 +2,12 @@
 
 namespace Lazyants\WorkflowBundle\Service;
 
-use Lazyants\WorkflowBundle\Model\TaskCollection;
 use Lazyants\WorkflowBundle\Model\Workflow;
 use Lazyants\WorkflowBundle\Model\WorkflowCollection;
 use Lazyants\WorkflowBundle\Model\WorkflowStep;
 
 class WorkflowManager
 {
-    const TASK = 'Task';
     const WORKFLOW = 'Workflow';
     const WORKFLOW_STEP = 'Workflow step';
 
@@ -19,25 +17,16 @@ class WorkflowManager
     protected $reservedWords = array('step');
 
     /**
-     * @var \LazyAnts\WorkflowBundle\Model\TaskCollection
-     */
-    protected $taskCollection;
-
-    /**
      * @var \LazyAnts\WorkflowBundle\Model\WorkflowCollection
      */
     protected $workflowCollection;
 
     /**
-     * @param array $tasks
      * @param array $workflows
      * @throws \Exception
      */
-    public function __construct(array $tasks, array $workflows)
+    public function __construct(array $workflows)
     {
-        $this->taskCollection = new TaskCollection();
-        $this->taskCollection->fromArray($tasks);
-
         $this->workflowCollection = new WorkflowCollection();
 
         foreach ($workflows as $workflowName => $workflowData) {
@@ -47,11 +36,6 @@ class WorkflowManager
             $steps = $workflow->getSteps();
 
             foreach ($workflowData['steps'] as $workflowStepName => $workflowStepData) {
-                $task = $this->taskCollection->get($workflowStepData['task']);
-                if ($task === null) {
-                    $this->exceptionNotFound($workflowStepData['task'], WorkflowManager::TASK);
-                }
-
                 if (in_array($workflowStepName, $this->reservedWords)) {
                     throw new \Exception(
                         sprintf(
@@ -62,7 +46,7 @@ class WorkflowManager
                     );
                 }
 
-                $workflowStep = new WorkflowStep($workflowStepName, $task);
+                $workflowStep = new WorkflowStep($workflowStepName);
 
                 if ($workflowStepData['auto'] && count($workflowStepData['roles']) > 0) {
                     throw new \Exception(
@@ -123,14 +107,6 @@ class WorkflowManager
 
             $this->workflowCollection->add($workflow);
         }
-    }
-
-    /**
-     * @return \LazyAnts\WorkflowBundle\Model\TaskCollection
-     */
-    public function getTasks()
-    {
-        return $this->taskCollection;
     }
 
     /**

@@ -24,7 +24,6 @@ class LazyantsWorkflowExtensionTest extends TestCase
         $extension = new LazyantsWorkflowExtension();
         $extension->load(array($this->getConfig()), $container);
 
-        $this->assertTrue(is_array($container->getParameter('lazyants.tasks')));
         $this->assertTrue(is_array($container->getParameter('lazyants.workflows')));
 
         /** @var $workflowManager \Lazyants\WorkflowBundle\Service\WorkflowManager */
